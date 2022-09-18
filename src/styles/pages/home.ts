@@ -8,7 +8,7 @@ export const HomeContainer = styled("main", {
   marginLeft: "auto",
 });
 
-export const Product = styled("a", {
+export const Product = styled("div", {
   background: "linear-gradient(180deg, #1EA483 0%, #7465D4 100%)",
   borderRadius: 6,
   cursor: "pointer",
