@@ -1,8 +1,6 @@
-import axios from "axios";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
-import { useState } from "react";
 import Stripe from "stripe";
 import { stripe } from "../../lib/stripe";
 import {
@@ -10,44 +8,30 @@ import {
   ProductContainer,
   ProductDetails,
 } from "../../styles/pages/product";
+import { useRouter } from "next/router";
+import { useContext } from "react";
+import { CartContext, IProduct } from "../../contexts/CartContext";
 
 interface ProductProps {
-  product: {
-    id: string;
-    name: string;
-    description: string;
-    imageUrl: string;
-    price: string;
-    defaultPriceId: string;
-  };
+  product: IProduct;
 }
 
 export default function Product({ product }: ProductProps) {
-  const [isCreatingCheckoutSession, setIsCreatingCheckoutSession] =
-    useState(false);
+  const { isFallback } = useRouter();
 
-  async function handleBuyProduct() {
-    try {
-      setIsCreatingCheckoutSession(true);
-      const response = await axios.post(`/api/checkout`, {
-        priceId: product.defaultPriceId,
-      });
+  const { addToCart, checkIfItemAlreadyExist } = useContext(CartContext);
 
-      const { checkoutUrl } = response.data;
-
-      window.location.href = checkoutUrl;
-    } catch (error) {
-      setIsCreatingCheckoutSession(false);
-      alert("Falha ao redirecionar ao checkout");
-    }
+  if (isFallback) {
+    return <p>Loading...</p>;
   }
+
+  const itemAlreadyInCart = checkIfItemAlreadyExist(product.id);
 
   return (
     <>
       <Head>
         <title>{product.name} | Ignite Shop</title>
       </Head>
-
       <ProductContainer>
         <ImageContainer>
           <Image
@@ -64,10 +48,12 @@ export default function Product({ product }: ProductProps) {
           <p>{product.description}</p>
 
           <button
-            disabled={isCreatingCheckoutSession}
-            onClick={handleBuyProduct}
+            disabled={itemAlreadyInCart}
+            onClick={() => addToCart(product)}
           >
-            Comprar agora
+            {itemAlreadyInCart
+              ? "Produto ja está no carrinho"
+              : " Colocar na sacola"}
           </button>
         </ProductDetails>
       </ProductContainer>
@@ -78,7 +64,7 @@ export default function Product({ product }: ProductProps) {
 export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths: [{ params: { id: "prod_MRxvg10eRwVGPW" } }],
-    fallback: "blocking",
+    fallback: true,
   };
 };
 
@@ -103,6 +89,7 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({
           style: "currency",
           currency: "BRL",
         }).format(price.unit_amount / 100),
+        numberPrice: price.unit_amount / 100,
         description: product.description,
         defaultPriceId: price.id,
       },

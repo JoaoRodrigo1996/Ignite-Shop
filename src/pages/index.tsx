@@ -3,28 +3,35 @@ import Head from "next/head";
 import Stripe from "stripe";
 import Link from "next/link";
 import { GetStaticProps } from "next";
-import { useKeenSlider } from "keen-slider/react";
 import { stripe } from "../lib/stripe";
 import Image from "next/future/image";
-
+import { useKeenSlider } from "keen-slider/react";
 import { HomeContainer, Product } from "../styles/pages/home";
+import { CartButton } from "../components/CartButton";
+import { useContext, MouseEvent } from "react";
+import { CartContext, IProduct } from "../contexts/CartContext";
 
 interface HomeProps {
-  products: {
-    id: string;
-    name: string;
-    imageUrl: string;
-    price: string;
-  }[];
+  products: IProduct[];
 }
 
 export default function Home({ products }: HomeProps) {
-  const [sliderRef, instanceRef] = useKeenSlider({
+  const [sliderRef] = useKeenSlider({
     slides: {
       perView: 3,
       spacing: 48,
     },
   });
+
+  const { addToCart, checkIfItemAlreadyExist } = useContext(CartContext);
+
+  function handleAddToCart(
+    e: MouseEvent<HTMLButtonElement>,
+    product: IProduct
+  ) {
+    e.preventDefault();
+    addToCart(product);
+  }
 
   return (
     <>
@@ -42,8 +49,16 @@ export default function Home({ products }: HomeProps) {
               <Product className="keen-slider__slide">
                 <Image src={product.imageUrl} width={520} height={480} alt="" />
                 <footer>
-                  <strong>{product.name}</strong>
-                  <span>{product.price}</span>
+                  <div>
+                    <strong>{product.name}</strong>
+                    <span>{product.price}</span>
+                  </div>
+                  <CartButton
+                    color="green"
+                    size="lg"
+                    disabled={checkIfItemAlreadyExist(product.id)}
+                    onClick={(e) => handleAddToCart(e, product)}
+                  />
                 </footer>
               </Product>
             </Link>
@@ -61,7 +76,6 @@ export const getStaticProps: GetStaticProps = async () => {
 
   const products = response.data.map((product) => {
     const price = product.default_price as Stripe.Price;
-
     return {
       id: product.id,
       name: product.name,
@@ -70,6 +84,8 @@ export const getStaticProps: GetStaticProps = async () => {
         style: "currency",
         currency: "BRL",
       }).format(price.unit_amount / 100),
+      numberPrice: price.unit_amount / 100,
+      defaultPriceId: price.id,
     };
   });
 
@@ -77,6 +93,6 @@ export const getStaticProps: GetStaticProps = async () => {
     props: {
       products,
     },
-    revalidate: 60 * 60 * 2, // 2 hours
+    revalidate: 60 * 60 * 2, // 2 hours,
   };
 };

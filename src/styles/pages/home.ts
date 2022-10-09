@@ -3,6 +3,7 @@ import { styled } from "..";
 export const HomeContainer = styled("main", {
   display: "flex",
   width: "100%",
+
   maxWidth: "calc(100vw - ((100vw - 1180px) / 2))",
   minHeight: 656,
   marginLeft: "auto",
@@ -11,7 +12,7 @@ export const HomeContainer = styled("main", {
 export const Product = styled("div", {
   background: "linear-gradient(180deg, #1EA483 0%, #7465D4 100%)",
   borderRadius: 6,
-  cursor: "pointer",
+  width: "100%",
   position: "relative",
   overflow: "hidden",
   display: "flex",
@@ -38,6 +39,12 @@ export const Product = styled("div", {
     transform: "translateY(110%)",
     opacity: 0,
     transition: "all .2s ease-in-out",
+
+    div: {
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.5rem",
+    },
 
     strong: {
       fontSize: "$lg",

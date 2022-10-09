@@ -2,7 +2,7 @@ import { styled } from "../";
 
 export const ProductContainer = styled("main", {
   display: "grid",
-  gridTemplateColumns: "1fr 1fr ",
+  gridTemplateColumns: "1fr 1fr",
   alignItems: "stretch",
   gap: "4rem",
 
@@ -53,7 +53,7 @@ export const ProductDetails = styled("div", {
     color: "$white",
     borderRadius: 6,
     padding: "1.25rem",
-    cursor: "pointer",
+
     fontWeight: "bold",
     fontSize: "$md",
 
